@@ -4,5 +4,5 @@
   "Evergarden themes for GNU Emacs"
   '((emacs "28.1"))
   :keywords '("faces" "themes")
-  :url "https://github.com/ronhu/evergarden-doomemacs")
+  :url "https://github.com/ronhuang/evergarden-doomemacs")
 ;;; evergarden-themes-pkg.el ends here

@@ -1,11 +1,11 @@
 ;;; evergarden-themes.el --- Evergarden themes for GNU Emacs -*- lexical-binding: t; -*-
 
-;; Author: Ron Hu
-;; Maintainer: Ron Hu
+;; Author: Ron Huang
+;; Maintainer: Ron Huang
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: faces, themes
-;; URL: https://github.com/ronhu/evergarden-doomemacs
+;; URL: https://github.com/ronhuang/evergarden-doomemacs
 ;; SPDX-License-Identifier: Apache-2.0
 
 ;;; Commentary:
@@ -33,7 +33,7 @@
   "Evergarden themes for GNU Emacs."
   :group 'faces
   :prefix "evergarden-"
-  :link '(url-link "https://github.com/ronhu/evergarden-doomemacs"))
+  :link '(url-link "https://github.com/ronhuang/evergarden-doomemacs"))
 
 
 ;;
