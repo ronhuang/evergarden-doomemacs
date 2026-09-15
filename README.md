@@ -100,6 +100,22 @@ face name:
         (font-lock-string-face :fg "#9ece6a" :style (bold))))
 ```
 
+## Face coverage
+
+The themes cover the core UI (default, cursor, region, line numbers, fringe,
+mode/header lines, tab bar and tab line, minibuffer, search, links, tooltips),
+the syntax faces (`font-lock-*`, including the Emacs 28/29/30 additions such as
+`font-lock-operator-face` and `font-lock-property-face`), diagnostics
+(flycheck, flymake, eglot), diffs, completion (company, corfu, vertico, ivy,
+helm, the built-in `completions-*`), ANSI terminal colors, org-mode and
+markdown-mode, magit and smerge, dired, treemacs and neotree, which-key,
+rainbow-delimiters, highlight-indent-guides, and the Doom modeline
+(`doom-modeline-bar` follows the accent).
+
+The accent is deliberately confined to chrome — cursor, active tab, float
+title, completion/picker selection, `doom-modeline-bar` — exactly as in the
+Neovim port; syntax colors are fixed per flavor.
+
 ## Development
 
 The palette data (`evergarden-palette-*.el`) and the 48 theme files are
