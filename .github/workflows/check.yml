@@ -1,0 +1,18 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  generated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Whiskers
+        run: cargo install evergarden-whiskers
+      - name: Verify the generated files are up to date
+        run: |
+          whiskers evergarden.tera --check
+          whiskers evergarden-themes.tera --check

@@ -1,0 +1,22 @@
+---
+whiskers:
+  version: ^2.0.0
+  matrix:
+    - flavor
+    - accent
+  filename: "evergarden-{{flavor.identifier}}-{{accent}}-theme.el"
+---
+;;; evergarden-{{flavor.identifier}}-{{accent}}-theme.el --- {{flavor.name}} with the {{accent}} accent  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;;
+;; The {{flavor.name}} flavor of Evergarden with the {{accent}} accent.
+;;
+;; Generated from evergarden-themes.tera by Whiskers.  Do not edit by hand;
+;; the faces themselves live in evergarden-themes.el.
+
+;;; Code:
+
+(require 'evergarden-themes)
+(evergarden--deftheme {{flavor.identifier}} {{accent}})
+;;; evergarden-{{flavor.identifier}}-{{accent}}-theme.el ends here

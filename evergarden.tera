@@ -1,0 +1,24 @@
+---
+whiskers:
+  version: ^2.0.0
+  matrix:
+    - flavor
+  filename: "evergarden-palette-{{flavor.identifier}}.el"
+---
+;;; evergarden-palette-{{flavor.identifier}}.el --- {{flavor.name}} palette data  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;;
+;; Palette data for the {{flavor.name}} flavor of the Evergarden theme family.
+;;
+;; Generated from evergarden.tera by Whiskers.  Do not edit by hand; run
+;; `just build' after the upstream palette changes.
+
+;;; Code:
+
+(defconst evergarden-palette-{{flavor.identifier}}
+  '({% for _, color in flavor.colors %}
+    ({{color.name}} . "#{{color.hex}}"){% endfor %}))
+
+(provide 'evergarden-palette-{{flavor.identifier}})
+;;; evergarden-palette-{{flavor.identifier}}.el ends here
