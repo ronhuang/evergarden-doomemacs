@@ -26,7 +26,7 @@ With Doom Emacs, declare the package and pick a theme:
 (package! evergarden-themes
   :recipe (:host github :repo "ronhuang/evergarden-doomemacs"))
 
-;;; ~/.config/doom/init.el
+;;; ~/.config/doom/config.el
 (setq doom-theme 'evergarden-winter-yellow)
 ```
 
