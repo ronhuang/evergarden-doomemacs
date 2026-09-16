@@ -1,0 +1,34 @@
+(defun evergarden--apply-override (face attrs)
+  "Apply the user's `evergarden-overrides' entry for FACE to ATTRS."
+  (let ((override (cdr (assq face evergarden-overrides))))
+    (cond
+     ((null override) attrs)
+     ;; Plist form: (:fg "#..." :bg "#..." :style (bold))
+     ((keywordp (car override))
+      (let* ((fg (plist-get override :fg))
+             (bg (plist-get override :bg))
+             (style (plist-get override :style))
+             (attrs (copy-sequence attrs)))
+        (when fg (setq attrs (plist-put attrs :foreground fg)))
+        (when bg (setq attrs (plist-put attrs :background bg)))
+        (when style
+          (setq attrs (append (evergarden--style-attrs style (plist-get attrs :foreground))
+                              attrs)))
+        attrs))
+     ;; Shorthand: ("#fg" "#bg") / ("#fg" "#bg" (bold))
+     (t
+      (let ((attrs (copy-sequence attrs)))
+        (when (nth 0 override) (setq attrs (plist-put attrs :foreground (nth 0 override))))
+        (when (nth 1 override) (setq attrs (plist-put attrs :background (nth 1 override))))
+        (when (nth 2 override)
+          (setq attrs (append (evergarden--style-attrs (nth 2 override)
+                                                       (plist-get attrs :foreground))
+                              attrs)))
+        attrs)))))
+
+(defun evergarden--face-specs (flavor accent)
+  "Return `custom-theme-set-faces' specs for FLAVOR and ACCENT."
+  (mapcar (lambda (cell)
+            (list (car cell)
+                  (list (cons t (evergarden--apply-override (car cell) (cdr cell))))))
+          (evergarden--faces (evergarden--theme flavor accent))))

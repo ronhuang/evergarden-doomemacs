@@ -67,12 +67,12 @@ keeps working.  `evergarden-after-load-theme-hook` runs after each load.
 
 Themes are generated from the Neovim port's defaults, and every option can be
 overridden per flavor/accent with `custom-theme-set-faces!` or by setting these
-before the theme loads:
+before the theme loads.  Loading any Evergarden theme — through `doom-theme`
+or `load-theme` — also sets `evergarden-flavor` and `evergarden-accent` from
+the loaded theme, so you usually don't need to set them yourself:
 
 ```elisp
-(setq evergarden-flavor 'fall         ; winter | fall | spring | summer
-      evergarden-accent 'green        ; any accent above
-      evergarden-transparent-background t
+(setq evergarden-transparent-background t
       evergarden-cursor-color 'accent ; `accent', `none' or a palette color
       evergarden-sign-color 'none
       evergarden-float-color 'mantle
@@ -90,17 +90,20 @@ before the theme loads:
       evergarden-style-keyword '(italic)
       evergarden-style-comment '(italic)
       evergarden-style-spell '(underline)
-      evergarden-style-disable nil)
+      evergarden-style-disable nil
+      evergarden-headings '((1 :overline t :height 1.4) ; heading depth or t
+                            (2 :overline t :height 1.3)
+                            (t :height 1.1)))
 ```
 
 `evergarden-overrides` mirrors the Neovim port's `overrides`, keyed by Emacs
-face name:
+face name; colors may be hex strings or palette color names:
 
 ```elisp
 (setq evergarden-overrides
-      '((default :bg "#000000")
+      '((default :bg crust)
         (font-lock-keyword-face "#fddce3" "#1d2021")
-        (font-lock-string-face :fg "#9ece6a" :style (bold))))
+        (font-lock-string-face :fg green :style (bold))))
 ```
 
 ## Face coverage

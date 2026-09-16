@@ -187,16 +187,35 @@ any palette color name can be used instead."
   :type (evergarden--style-widget-type t t)
   :group 'evergarden-themes)
 
+(defcustom evergarden-headings nil
+  "Extra face attributes for heading faces (à la modus-themes-headings).
+An alist of (LEVEL . ATTRS).  LEVEL is a heading depth (1-8) or t for
+every level without its own entry.  ATTRS is a face attribute plist;
+color values may be given as palette color names.  The attributes are
+applied to `org-level-N' and `markdown-header-face-N'.
+
+For example:
+
+  (setq evergarden-headings
+        \='((1 :overline t :height 1.4)
+          (2 :overline t :height 1.3)
+          (3 :overline t :height 1.2)
+          (t :height 1.1)))"
+  :type '(alist :key-type (choice (integer :tag "Heading level")
+                                  (const :tag "Other levels" t))
+                :value-type plist)
+  :group 'evergarden-themes)
+
 (defcustom evergarden-overrides nil
   "Alist of face overrides, mirroring the Neovim port's `overrides'.
 
 Each element is (FACE . SPEC).  SPEC is either a plist with `:fg', `:bg' and
-`:style' keys, or a shorthand list of (FG BG) / (FG BG STYLE) where the
-colors are hex strings.  Examples:
+`:style' keys, or a shorthand list of (FG BG) / (FG BG STYLE).  Colors may
+be hex strings or palette color names.  Examples:
 
-  ((default :bg \"#000000\")
+  ((default :bg crust)
    (font-lock-keyword-face \"#fddce3\" \"#1d2021\")
-   (font-lock-string-face :fg \"#9ece6a\" :style (bold)))"
+   (font-lock-string-face :fg green :style (bold)))"
   :type '(alist :key-type symbol :value-type sexp)
   :group 'evergarden-themes)
 
@@ -224,6 +243,26 @@ NAME may be a color symbol, `none' for no color, or nil for no color."
   (cond ((null name) nil)
         ((eq name 'none) nil)
         (t (cdr (assq name colors)))))
+
+(defun evergarden--resolve-value (value colors)
+  "Return VALUE with palette color symbols resolved via COLORS.
+A symbol naming a palette color becomes its hex string, `none' becomes
+nil, and anything else is returned unchanged."
+  (cond ((memq value '(nil t)) value)
+        ((assq value colors) (cdr (assq value colors)))
+        ((eq value 'none) nil)
+        (t value)))
+
+(defun evergarden--resolve-attrs (attrs colors)
+  "Resolve palette color symbols in the face plist ATTRS via COLORS.
+Keys whose value resolves to nil are dropped."
+  (let (resolved)
+    (while attrs
+      (let ((value (evergarden--resolve-value (cadr attrs) colors)))
+        (when value
+          (setq resolved (plist-put resolved (car attrs) value))))
+      (setq attrs (cddr attrs)))
+    resolved))
 
 (defun evergarden--theme (flavor accent)
   "Return a plist describing the FLAVOR/ACCENT theme.
@@ -800,15 +839,17 @@ A `reverse' in STYLE swaps FG and BG, matching the Neovim port."
         (cons 'ansi-color-bright-cyan (attrs (col 'aqua) nil))
         (cons 'ansi-color-bright-white (attrs (col 'subtext1) nil)))))))
 
-(defun evergarden--apply-override (face attrs)
-  "Apply the user's `evergarden-overrides' entry for FACE to ATTRS."
+(defun evergarden--apply-override (face attrs colors)
+  "Apply the user's `evergarden-overrides' entry for FACE to ATTRS.
+Color values may be hex strings or palette color names, resolved via
+COLORS."
   (let ((override (cdr (assq face evergarden-overrides))))
     (cond
      ((null override) attrs)
-     ;; Plist form: (:fg "#..." :bg "#..." :style (bold))
+     ;; Plist form: (:fg surface1 :bg crust :style (bold))
      ((keywordp (car override))
-      (let* ((fg (plist-get override :fg))
-             (bg (plist-get override :bg))
+      (let* ((fg (evergarden--resolve-value (plist-get override :fg) colors))
+             (bg (evergarden--resolve-value (plist-get override :bg) colors))
              (style (plist-get override :style))
              (attrs (copy-sequence attrs)))
         (when fg (setq attrs (plist-put attrs :foreground fg)))
@@ -817,23 +858,46 @@ A `reverse' in STYLE swaps FG and BG, matching the Neovim port."
           (setq attrs (append (evergarden--style-attrs style (plist-get attrs :foreground))
                               attrs)))
         attrs))
-     ;; Shorthand: ("#fg" "#bg") / ("#fg" "#bg" (bold))
+     ;; Shorthand: (FG BG) / (FG BG STYLE)
      (t
-      (let ((attrs (copy-sequence attrs)))
-        (when (nth 0 override) (setq attrs (plist-put attrs :foreground (nth 0 override))))
-        (when (nth 1 override) (setq attrs (plist-put attrs :background (nth 1 override))))
+      (let ((fg (evergarden--resolve-value (nth 0 override) colors))
+            (bg (evergarden--resolve-value (nth 1 override) colors))
+            (attrs (copy-sequence attrs)))
+        (when fg (setq attrs (plist-put attrs :foreground fg)))
+        (when bg (setq attrs (plist-put attrs :background bg)))
         (when (nth 2 override)
           (setq attrs (append (evergarden--style-attrs (nth 2 override)
                                                        (plist-get attrs :foreground))
                               attrs)))
         attrs)))))
 
+(defun evergarden--heading-attrs (face attrs colors)
+  "Return ATTRS extended by the `evergarden-headings' entry for FACE.
+Heading faces are `org-level-N' and `markdown-header-face-N'; levels
+without their own entry fall back to the `t' entry."
+  (let ((name (symbol-name face)) level)
+    (when (string-match
+           "\\`\\(?:org-level\\|markdown-header-face\\)-\\([0-9]+\\)\\'"
+           name)
+      (setq level (string-to-number (match-string 1 name))))
+    (if level
+        (append attrs
+                (evergarden--resolve-attrs
+                 (or (cdr (assq level evergarden-headings))
+                     (cdr (assq t evergarden-headings)))
+                 colors))
+      attrs)))
+
 (defun evergarden--face-specs (flavor accent)
   "Return `custom-theme-set-faces' specs for FLAVOR and ACCENT."
-  (mapcar (lambda (cell)
-            (list (car cell)
-                  (list (cons t (evergarden--apply-override (car cell) (cdr cell))))))
-          (evergarden--faces (evergarden--theme flavor accent))))
+  (let* ((theme (evergarden--theme flavor accent))
+         (colors (plist-get theme :colors)))
+    (mapcar
+     (lambda (cell)
+       (let* ((face (car cell))
+              (attrs (evergarden--heading-attrs face (cdr cell) colors)))
+         (list face (list (cons t (evergarden--apply-override face attrs colors))))))
+     (evergarden--faces theme))))
 
 (defmacro evergarden--deftheme (flavor accent)
   "Define the Evergarden theme for FLAVOR and ACCENT.
@@ -847,6 +911,8 @@ Generated theme files call this."
        (deftheme ,name ,doc)
        (apply #'custom-theme-set-faces ',name
               (evergarden--face-specs ',flavor ',accent))
+       (setq evergarden-flavor ',flavor
+             evergarden-accent ',accent)
        (provide ',feature))))
 
 
@@ -937,13 +1003,11 @@ TEST is the equality test used to find VALUE, defaulting to `eql'."
 ;;;###autoload
 (defun evergarden-load-theme (flavor accent)
   "Load the Evergarden theme for FLAVOR and ACCENT.
-This sets `evergarden-flavor' and `evergarden-accent', disables any other
-Evergarden theme, loads the requested one and, inside Doom Emacs, keeps
+Loading the theme keeps `evergarden-flavor' and `evergarden-accent' in
+sync, disables any other Evergarden theme and, inside Doom Emacs, keeps
 `doom-theme' in sync."
   (interactive (list (evergarden--read-flavor) (evergarden--read-accent)))
   (let ((theme (evergarden--theme-symbol flavor accent)))
-    (setq evergarden-flavor flavor
-          evergarden-accent accent)
     (dolist (enabled custom-enabled-themes)
       (when (and (not (eq enabled theme))
                  (string-prefix-p "evergarden-" (symbol-name enabled)))
