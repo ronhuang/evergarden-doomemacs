@@ -15,7 +15,8 @@ x 12 accents (red, orange, yellow, lime, green, aqua, skye, snow, blue, purple, 
 
 The face mapping follows the official [Neovim port](https://codeberg.org/evergarden/nvim):
 syntax colors are fixed per flavor, while the accent drives the cursor, the
-active tab, the float title and the completion/picker selection.
+active tab, the completion/picker and marked-item selection, and the Doom
+modeline bar.
 
 ## Install
 
@@ -58,7 +59,9 @@ Without Doom, the themes are ordinary Emacs themes:
 | `evergarden-describe` | Echo the current flavor and accent |
 
 Rotation loads the new theme immediately and keeps `doom-theme` in sync when
-Doom is present.  `evergarden-after-load-theme-hook` runs after each load.
+Doom is present.  A dark/light pair is preserved: only the half whose flavor
+darkness matches the new theme is replaced, so system-appearance switching
+keeps working.  `evergarden-after-load-theme-hook` runs after each load.
 
 ## Customization
 
@@ -112,9 +115,9 @@ markdown-mode, magit and smerge, dired, treemacs and neotree, which-key,
 rainbow-delimiters, highlight-indent-guides, and the Doom modeline
 (`doom-modeline-bar` follows the accent).
 
-The accent is deliberately confined to chrome — cursor, active tab, float
-title, completion/picker selection, `doom-modeline-bar` — exactly as in the
-Neovim port; syntax colors are fixed per flavor.
+The accent is deliberately confined to chrome — cursor, active tab,
+completion/picker and marked-item selection, `doom-modeline-bar` — mirroring
+the Neovim port; syntax colors are fixed per flavor.
 
 ## Development
 
