@@ -380,12 +380,20 @@ A `reverse' in STYLE swaps FG and BG, matching the Neovim port."
               (if (memq 'reverse evergarden-style-tabline)
                   (a (c 'crust) accent)
                 (a (c 'subtext1) (c 'surface0))))
+        (cons 'tab-bar-tab-group-current
+              (if (memq 'reverse evergarden-style-tabline)
+                  (a (c 'crust) accent '(bold))
+                (a (c 'subtext1) (c 'surface1) '(bold))))
         (cons 'tab-bar-tab-inactive (a (c 'overlay1) (c 'surface0)))
         (cons 'tab-line (a (c 'overlay1) (c 'surface0)))
         (cons 'tab-line-tab
               (if (memq 'reverse evergarden-style-tabline)
                   (a (c 'crust) accent)
                 (a (c 'subtext1) (c 'surface0))))
+        (cons 'tab-line-tab-current
+              (if (memq 'reverse evergarden-style-tabline)
+                  (a (c 'crust) accent)
+                (a (c 'subtext1) (c 'surface1))))
         (cons 'tab-line-tab-inactive (a (c 'overlay1) (c 'surface0)))
         (cons 'minibuffer-prompt (a (c 'subtext0) nil))
         (cons 'shadow (a (c 'overlay1) nil))
@@ -738,7 +746,15 @@ A `reverse' in STYLE swaps FG and BG, matching the Neovim port."
         (cons 'whitespace-trailing
               (a nil (evergarden--blend (plist-get diag :error) (c 'base) 0.16))))
 
-       ;; Doom modeline.
+       ;; Doom workspaces.  The workspace tabs that `+workspace/display'
+       ;; shows in the echo area use their own faces; without these they
+       ;; inherit `highlight' and the selected tab is barely visible.
+       (list
+        (cons '+workspace-tab-selected-face
+              (if (memq 'reverse evergarden-style-tabline)
+                  (a (c 'crust) accent)
+                (a (c 'subtext1) (c 'surface1))))
+        (cons '+workspace-tab-face (a (c 'overlay1) nil)))
        (list
         (cons 'doom-modeline-bar (a nil accent))
         (cons 'doom-modeline-buffer-file (a (c 'text) nil '(bold)))
