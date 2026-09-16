@@ -253,6 +253,14 @@ nil, and anything else is returned unchanged."
         ((eq value 'none) nil)
         (t value)))
 
+(defun evergarden--resolve-color (value colors)
+  "Resolve a color VALUE via COLORS, or nil if it is not a color.
+Palette color names become their hex string and hex strings pass
+through; anything else (say, a typo'd name) yields nil so a bad value
+can never crash the theme load."
+  (let ((value (evergarden--resolve-value value colors)))
+    (and (stringp value) value)))
+
 (defun evergarden--resolve-attrs (attrs colors)
   "Resolve palette color symbols in the face plist ATTRS via COLORS.
 Keys whose value resolves to nil are dropped."
@@ -848,8 +856,8 @@ COLORS."
      ((null override) attrs)
      ;; Plist form: (:fg surface1 :bg crust :style (bold))
      ((keywordp (car override))
-      (let* ((fg (evergarden--resolve-value (plist-get override :fg) colors))
-             (bg (evergarden--resolve-value (plist-get override :bg) colors))
+      (let* ((fg (evergarden--resolve-color (plist-get override :fg) colors))
+             (bg (evergarden--resolve-color (plist-get override :bg) colors))
              (style (plist-get override :style))
              (attrs (copy-sequence attrs)))
         (when fg (setq attrs (plist-put attrs :foreground fg)))
@@ -860,8 +868,8 @@ COLORS."
         attrs))
      ;; Shorthand: (FG BG) / (FG BG STYLE)
      (t
-      (let ((fg (evergarden--resolve-value (nth 0 override) colors))
-            (bg (evergarden--resolve-value (nth 1 override) colors))
+      (let ((fg (evergarden--resolve-color (nth 0 override) colors))
+            (bg (evergarden--resolve-color (nth 1 override) colors))
             (attrs (copy-sequence attrs)))
         (when fg (setq attrs (plist-put attrs :foreground fg)))
         (when bg (setq attrs (plist-put attrs :background bg)))
